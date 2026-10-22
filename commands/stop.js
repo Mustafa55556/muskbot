@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,7 +8,7 @@ module.exports = {
   async executeSlash(interaction, { distube }) {
     const queue = distube.getQueue(interaction.guildId);
     if (!queue) {
-      return interaction.reply({ content: '❌ لا توجد أي موسيقى قيد التشغيل حالياً!', ephemeral: true });
+      return interaction.reply({ content: '❌ لا توجد أي موسيقى قيد التشغيل حالياً!', flags: MessageFlags.Ephemeral });
     }
 
     await queue.stop();

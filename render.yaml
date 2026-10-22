@@ -1,13 +1,10 @@
 services:
   - type: web
     name: muskbot
-    env: node
+    runtime: docker
     plan: free
-    buildCommand: npm install
-    startCommand: node index.js
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: NODE_VERSION
-        value: "22"
       - key: DISCORD_TOKEN
         sync: false
       - key: PREFIX

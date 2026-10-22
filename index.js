@@ -2,22 +2,40 @@ require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const {
   Client,
   GatewayIntentBits,
   Collection,
   ActivityType,
   Events,
+  MessageFlags,
 } = require('discord.js');
 const { DisTube } = require('distube');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
-const ffmpegStatic = require('ffmpeg-static');
 const registerDisTubeEvents = require('./events/distubeEvents');
 
 const TOKEN = (process.env.DISCORD_TOKEN || '').replace(/['"]/g, '').trim();
 const PREFIX = (process.env.PREFIX || '!').trim();
+
+// تحديد مسار FFmpeg: أولوية النظام (Docker/apt-get) ثم ffmpeg-static
+let ffmpegPath = 'ffmpeg'; // الافتراضي: من النظام
+try {
+  execSync('ffmpeg -version', { stdio: 'ignore' });
+  console.log('✅ FFmpeg متاح من النظام (system ffmpeg)');
+} catch {
+  try {
+    ffmpegPath = require('ffmpeg-static');
+    if (ffmpegPath) {
+      try { fs.chmodSync(ffmpegPath, 0o755); } catch {}
+      console.log('✅ FFmpeg متاح من ffmpeg-static:', ffmpegPath);
+    }
+  } catch {
+    console.error('❌ FFmpeg غير متاح! الصوت لن يعمل.');
+  }
+}
 
 // تشغيل خادم ويب مصغر لمنصات الاستضافة مثل Render (Web Service Health Check)
 const PORT = process.env.PORT || 3000;
@@ -26,7 +44,7 @@ const server = http.createServer((req, res) => {
   res.end('MuskBot Discord Music is online! 🎵');
 });
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌐 خادم الويب يعمل على 0.0.0.0:${PORT} (جاهز لـ Render)`);
+  console.log(`🌐 خادم الويب يعمل على 0.0.0.0:${PORT}`);
 });
 
 if (!TOKEN || TOKEN.trim() === '' || TOKEN.includes('ضع_التوكن')) {
@@ -47,21 +65,11 @@ const client = new Client({
   ],
 });
 
-// منح صلاحيات التنفيذ لـ FFmpeg على بيئات لينكس مثل Render
-if (ffmpegStatic) {
-  try {
-    fs.chmodSync(ffmpegStatic, 0o755);
-    console.log('✅ تم التحقق من صلاحيات تشغيل FFmpeg بنجاح:', ffmpegStatic);
-  } catch (err) {
-    console.warn('⚠️ ملاحظة حول صلاحيات FFmpeg:', err.message);
-  }
-}
-
 // إعداد مشغل الموسيقى DisTube
 const distube = new DisTube(client, {
   emitNewSongOnly: true,
   ffmpeg: {
-    path: ffmpegStatic,
+    path: ffmpegPath,
   },
   plugins: [
     new SpotifyPlugin(),
@@ -126,6 +134,8 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
+  console.log(`[CMD] /${interaction.commandName} by ${interaction.user.tag}`);
+
   const command = client.commands.get(interaction.commandName);
   if (!command || !command.executeSlash) return;
 
@@ -135,7 +145,7 @@ client.on(Events.InteractionCreate, async interaction => {
     console.error(`خطأ أثناء تنفيذ الأمر ${interaction.commandName}:`, error);
     const errorResponse = {
       content: '❌ حدث خطأ غير متوقع أثناء تنفيذ هذا الأمر!',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     };
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp(errorResponse).catch(() => {});
@@ -152,6 +162,8 @@ client.on(Events.MessageCreate, async message => {
 
   const args = message.content.slice(PREFIX.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
+
+  console.log(`[CMD] ${PREFIX}${commandName} by ${message.author.tag}`);
 
   const actualCommandName = client.aliases.get(commandName) || commandName;
   const command = client.commands.get(actualCommandName);
@@ -181,7 +193,7 @@ client.rest.on('error', error => {
 
 // منع توقف البوت عند الأخطاء غير المتوقعة
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('⚠️ Unhandled Rejection:', reason);
 });
 
 process.on('uncaughtException', error => {
@@ -190,14 +202,9 @@ process.on('uncaughtException', error => {
 
 // معالجة إشارات الإيقاف لإغلاق الاتصال بأمان
 process.on('SIGTERM', () => {
-  console.log('Received SIGTERM, closing client...');
+  console.log('Received SIGTERM, shutting down gracefully...');
   client.destroy();
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('Received SIGINT, closing client...');
-  client.destroy();
+  server.close();
   process.exit(0);
 });
 

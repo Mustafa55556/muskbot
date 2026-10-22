@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,7 +15,7 @@ module.exports = {
     if (!voiceChannel) {
       return interaction.reply({
         content: '❌ يجب أن تكون متواجداً في روم صوتي أولاً لتشغيل الموسيقى!',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -23,7 +23,7 @@ module.exports = {
     if (botVoiceChannel && botVoiceChannel.id !== voiceChannel.id) {
       return interaction.reply({
         content: `❌ البوت متواجد حالياً في روم صوتي آخر (<#${botVoiceChannel.id}>)!`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
