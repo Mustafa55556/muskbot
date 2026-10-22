@@ -1,6 +1,24 @@
 # 🎵 MuskBot - بوت ميوزك ديسكورد متكامل (Discord Music Bot)
 
-بوت موسيقى متطور لديسكورد مبني باستخدام **Discord.js v14** ومكتبة **DisTube**، يدعم تشغيل المقاطع الصوتية وقوائم التشغيل بجودة عالية، مع دعم أوامر السلاش (`/`) والأوامر النصية التقليدية (`!`).
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Mustafa55556/muskbot)
+
+بوت موسيقى متطور لديسكورد مبني باستخدام **Discord.js v14** ومكتبة **DisTube**، يدعم تشغيل المقاطع الصوتية وقوائم التشغيل بجودة عالية، مع دعم أوامر السلاش (`/`) والأوامر النصية التقليدية (`!`). جاهز للتشغيل محلياً أو الاستضافة السحابية على **Render**.
+
+---
+
+## ☁️ النشر والتشغيل على Render (خطوة واحدة)
+
+يمكنك تشغيل البوت سحابياً على مدار الساعة 24/7 عبر منصة Render مجاناً:
+
+1. اضغط على زر **Deploy to Render** في الأعلى، أو ادخل على الرابط:
+   [**Deploy on Render Dashboard**](https://render.com/deploy?repo=https://github.com/Mustafa55556/muskbot)
+2. في خانة المتغيرات (Environment Variables)، ضع التوكن في حقل `DISCORD_TOKEN`.
+3. اضغط **Apply** وسيبدأ البوت في العمل سحابياً مباشرة!
+
+> 💡 **لإبقاء البوت متصلاً 24/7 دون توقف على الخطة المجانية:**
+> بعد انتهاء النشر على Render، انسخ رابط موقع الخدمة (مثلاً `https://muskbot.onrender.com`) وضعه في موقع مراقبة مجاني مثل [UptimeRobot](https://uptimerobot.com) ليقوم بطلب الرابط كل 5 دقائق لمنع دخول السيرفر في وضع السكون (Sleep).
+
+---
 
 ---
 
