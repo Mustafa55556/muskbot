@@ -107,4 +107,32 @@ module.exports = function registerDisTubeEvents(distube) {
       queue.textChannel.send({ embeds: [embed] }).catch(console.error);
     }
   });
+
+  // تتبع حالة الروم الصوتي ومراحل الاتصال الصوتي
+  distube.on('initQueue', queue => {
+    console.log(`[DisTube] تم تهيئة قائمة تشغيل في السيرفر: ${queue.id}`);
+
+    if (queue.voice?.connection) {
+      queue.voice.connection.on('stateChange', (oldState, newState) => {
+        console.log(`[Voice Connection] حالة اتصال الروم الصوتي: ${oldState.status} ➔ ${newState.status}`);
+      });
+      queue.voice.connection.on('error', error => {
+        console.error('❌ [Voice Connection Error]:', error);
+      });
+    }
+
+    if (queue.voice?.audioPlayer) {
+      queue.voice.audioPlayer.on('stateChange', (oldState, newState) => {
+        console.log(`[Audio Player] حالة تدفق الصوت: ${oldState.status} ➔ ${newState.status}`);
+      });
+      queue.voice.audioPlayer.on('error', error => {
+        console.error('❌ [Audio Player Error]:', error);
+      });
+    }
+  });
+
+  // مراقبة خرج FFmpeg أثناء معالجة الصوت
+  distube.on('ffmpegDebug', debug => {
+    console.log('[FFMPEG]:', debug);
+  });
 };

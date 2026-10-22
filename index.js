@@ -47,6 +47,16 @@ const client = new Client({
   ],
 });
 
+// منح صلاحيات التنفيذ لـ FFmpeg على بيئات لينكس مثل Render
+if (ffmpegStatic) {
+  try {
+    fs.chmodSync(ffmpegStatic, 0o755);
+    console.log('✅ تم التحقق من صلاحيات تشغيل FFmpeg بنجاح:', ffmpegStatic);
+  } catch (err) {
+    console.warn('⚠️ ملاحظة حول صلاحيات FFmpeg:', err.message);
+  }
+}
+
 // إعداد مشغل الموسيقى DisTube
 const distube = new DisTube(client, {
   emitNewSongOnly: true,
