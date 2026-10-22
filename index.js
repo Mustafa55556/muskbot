@@ -16,8 +16,8 @@ const { YtDlpPlugin } = require('@distube/yt-dlp');
 const ffmpegStatic = require('ffmpeg-static');
 const registerDisTubeEvents = require('./events/distubeEvents');
 
-const TOKEN = process.env.DISCORD_TOKEN;
-const PREFIX = process.env.PREFIX || '!';
+const TOKEN = (process.env.DISCORD_TOKEN || '').replace(/['"]/g, '').trim();
+const PREFIX = (process.env.PREFIX || '!').trim();
 
 // تشغيل خادم ويب مصغر لمنصات الاستضافة مثل Render (Web Service Health Check)
 const PORT = process.env.PORT || 3000;
@@ -25,8 +25,8 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('MuskBot Discord Music is online! 🎵');
 });
-server.listen(PORT, () => {
-  console.log(`🌐 خادم الويب يعمل على المنفذ: ${PORT} (جاهز لـ Render)`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🌐 خادم الويب يعمل على 0.0.0.0:${PORT} (جاهز لـ Render)`);
 });
 
 if (!TOKEN || TOKEN.trim() === '' || TOKEN.includes('ضع_التوكن')) {
@@ -178,5 +178,20 @@ process.on('uncaughtException', error => {
   console.error('⚠️ Uncaught Exception:', error?.stack || error);
 });
 
+// معالجة إشارات الإيقاف لإغلاق الاتصال بأمان
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM, closing client...');
+  client.destroy();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT, closing client...');
+  client.destroy();
+  process.exit(0);
+});
+
 // تسجيل الدخول
-client.login(TOKEN);
+client.login(TOKEN).catch(error => {
+  console.error('❌ فشل تسجيل دخول البوت إلى ديسكورد:', error);
+});
