@@ -3,8 +3,9 @@
 # ==============================
 FROM node:22-slim
 
-# تثبيت FFmpeg و أدوات الصوت الأساسية على لينكس
+# تثبيت FFmpeg و تحديث شهادات الأمان وأدوات الصوت الأساسية على لينكس
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     ffmpeg \
     python3 \
